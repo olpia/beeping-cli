@@ -2,7 +2,7 @@
 
 A GO client for [beeping](https://github.com/yanc0/beeping).
 For now, his only jobs is to query BeePing, and send his response to [greedee](https://github.com/yanc0/greedee) in collectd Metric format.
-It's Greedee jobs to write then in the TSDB.
+It's Greedee's job to write then in the TSDB (Graphite).
 
 
 ## Install (Linux)

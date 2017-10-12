@@ -149,6 +149,7 @@ func sendCollectdMetricsToGreedee(bpResp *Response) {
 	cMetrics := []*collectd.CollectDMetric{}
 	timeNow := time.Now().Unix()
 
+
 	cMetrics = append(cMetrics, createCMetric(timeNow, "http_status_code", float64(bpResp.HTTPStatusCode)))
 	cMetrics = append(cMetrics, createCMetric(timeNow, "http_body_pattern", convertBoolToCMetricVal(bpResp.HTTPBodyPattern)))
 	cMetrics = append(cMetrics, createCMetric(timeNow, "http_request_time", float64(bpResp.HTTPRequestTime)))
@@ -157,7 +158,9 @@ func sendCollectdMetricsToGreedee(bpResp *Response) {
 	cMetrics = append(cMetrics, createCMetric(timeNow, "tls_handshake", float64(bpResp.TLSHandshake)))
 	cMetrics = append(cMetrics, createCMetric(timeNow, "content_transfer", float64(bpResp.ContentTransfer)))
 	cMetrics = append(cMetrics, createCMetric(timeNow, "server_processing", float64(bpResp.ServerProcessing)))
-	cMetrics = append(cMetrics, createCMetric(timeNow, "cert_expiry_days_left", float64(bpResp.SSL.CertExpiryDaysLeft)))
+	if bpResp.SSL != nil {
+		cMetrics = append(cMetrics, createCMetric(timeNow, "cert_expiry_days_left", float64(bpResp.SSL.CertExpiryDaysLeft)))
+	}
 
 	cMetricsJson, _ := json.Marshal(cMetrics)
 	httpClient := &http.Client{}

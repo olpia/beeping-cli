@@ -5,56 +5,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/yanc0/beeping/sslcheck"
+	"github.com/yanc0/beeping/httpcheck"
 	"github.com/yanc0/greedee/collectd"
 	"log"
 	"net/http"
 	"os"
 	"time"
 )
-
-// TODO: use a BeePing package
-type Check struct {
-	URL      string        `json:"url" binding:"required"`
-	Pattern  string        `json:"pattern"`
-	Header   string        `json:"header"`
-	Insecure bool          `json:"insecure"`
-	Timeout  time.Duration `json:"timeout"`
-	Auth     string        `json:"auth"`
-}
-
-type Timeline struct {
-	NameLookup    int64 `json:"name_lookup"`
-	Connect       int64 `json:"connect"`
-	Pretransfer   int64 `json:"pretransfer"`
-	StartTransfer int64 `json:"starttransfer"`
-}
-
-type Geo struct {
-	Country string `json:"country"`
-	City    string `json:"city,omitempty"`
-	IP      string `json:"ip"`
-}
-
-type Response struct {
-	HTTPStatus      string `json:"http_status"`
-	HTTPStatusCode  int    `json:"http_status_code"`
-	HTTPBodyPattern bool   `json:"http_body_pattern"`
-	HTTPHeader      bool   `json:"http_header"`
-	HTTPRequestTime int64  `json:"http_request_time"`
-
-	InstanceName string `json:"instance_name"`
-
-	DNSLookup        int64 `json:"dns_lookup"`
-	TCPConnection    int64 `json:"tcp_connection"`
-	TLSHandshake     int64 `json:"tls_handshake,omitempty"`
-	ServerProcessing int64 `json:"server_processing"`
-	ContentTransfer  int64 `json:"content_transfer"`
-
-	Timeline *Timeline          `json:"timeline"`
-	Geo      *Geo               `json:"geo,omitempty"`
-	SSL      *sslcheck.CheckSSL `json:"ssl,omitempty"`
-}
 
 var beepingURL *string
 var checkURL *string
@@ -92,8 +49,8 @@ func main() {
 	sendCollectdMetricsToGreedee(bpResp)
 }
 
-func requestBeepingCheck() (*Response, error) {
-	check := &Check{
+func requestBeepingCheck() (*httpcheck.Response, error) {
+	check := &httpcheck.Check{
 		*checkURL,
 		*pattern,
 		"",
@@ -109,7 +66,7 @@ func requestBeepingCheck() (*Response, error) {
 		return nil, err
 	} else {
 		defer resp.Body.Close()
-		response := &Response{}
+		response := &httpcheck.Response{}
 		decoder := json.NewDecoder(resp.Body)
 		err := decoder.Decode(&response)
 		if err != nil {
@@ -143,7 +100,7 @@ func convertBoolToCMetricVal(value bool) float64 {
 	}
 }
 // Transform Beeping Response to a map of collectd.Metrics and send it to Greedee
-func sendCollectdMetricsToGreedee(bpResp *Response) {
+func sendCollectdMetricsToGreedee(bpResp *httpcheck.Response) {
 
 
 	cMetrics := []*collectd.CollectDMetric{}

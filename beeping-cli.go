@@ -15,7 +15,7 @@ import (
 
 var beepingURL *string
 var checkURL *string
-var timeout *int64
+var timeout *int
 var pattern *string
 var host *string
 var greedeeURL *string
@@ -26,7 +26,7 @@ func main() {
 
 	beepingURL = flag.String("beeping", "http://localhost:8080", "URL of your BeePing instance")
 	checkURL = flag.String("check", "", "URL we want to check")
-	timeout = flag.Int64("timeout", 20, "BeePing check timeout")
+	timeout = flag.Int("timeout", 20, "BeePing check timeout")
 	pattern = flag.String("pattern", "", "pattern that's need to be found in the body")
 	host = flag.String("host", "test.test.prod.host.beeping", "Collectd metric's host entry, for example:'customer.app.env.servername'")
 	greedeeURL = flag.String("greedee", "http://localhost:9223", "URL of your Greedee instance")
@@ -51,12 +51,10 @@ func main() {
 
 func requestBeepingCheck() (*httpcheck.Response, error) {
 	check := &httpcheck.Check{
-		*checkURL,
-		*pattern,
-		"",
-		false,
-		time.Duration(*timeout) * time.Second,
-		"",
+		URL:      *checkURL,
+		Pattern:  *pattern,
+		Insecure: false,
+		Timeout:  time.Duration(*timeout),
 	}
 
 	jsonReq, _ := json.Marshal(check)
@@ -99,13 +97,12 @@ func convertBoolToCMetricVal(value bool) float64 {
 		return float64(0)
 	}
 }
+
 // Transform Beeping Response to a map of collectd.Metrics and send it to Greedee
 func sendCollectdMetricsToGreedee(bpResp *httpcheck.Response) {
 
-
 	cMetrics := []*collectd.CollectDMetric{}
 	timeNow := time.Now().Unix()
-
 
 	cMetrics = append(cMetrics, createCMetric(timeNow, "http_status_code", float64(bpResp.HTTPStatusCode)))
 	cMetrics = append(cMetrics, createCMetric(timeNow, "http_body_pattern", convertBoolToCMetricVal(bpResp.HTTPBodyPattern)))

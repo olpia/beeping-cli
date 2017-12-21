@@ -21,6 +21,7 @@ var host *string
 var greedeeURL *string
 var greedeeUser *string
 var greedeePass *string
+var insecure *bool
 
 func main() {
 
@@ -32,6 +33,7 @@ func main() {
 	greedeeURL = flag.String("greedee", "http://localhost:9223", "URL of your Greedee instance")
 	greedeeUser = flag.String("greedeeUser", "", "Greedee user if configured with basic auth")
 	greedeePass = flag.String("greedeePass", "", "Greedee password if configured with basic auth")
+	insecure = flag.Bool("insecure", false, "Insecure mode for TLS check (default false)")
 	flag.Parse()
 
 	if *checkURL == "" {
@@ -53,7 +55,7 @@ func requestBeepingCheck() (*httpcheck.Response, error) {
 	check := &httpcheck.Check{
 		URL:      *checkURL,
 		Pattern:  *pattern,
-		Insecure: false,
+		Insecure: *insecure,
 		Timeout:  time.Duration(*timeout),
 	}
 
